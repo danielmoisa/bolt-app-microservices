@@ -4,16 +4,16 @@ load('ext://restart_process', 'docker_build_with_restart')
 ### K8s Config ###
 
 # Uncomment to use secrets
-# k8s_yaml('./infra/development/k8s/secrets.yaml')
+# k8s_yaml('./deploy/development/k8s/secrets.yaml')
 
-k8s_yaml('./infra/development/k8s/app-config.yaml')
+k8s_yaml('./deploy/development/k8s/app-config.yaml')
 
 ### End of K8s Config ###
 ### API Gateway ###
 
 gateway_compile_cmd = 'CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/api-gateway ./services/api-gateway'
 if os.name == 'nt':
-  gateway_compile_cmd = './infra/development/docker/api-gateway-build.bat'
+  gateway_compile_cmd = './deploy/development/docker/api-gateway-build.bat'
 
 local_resource(
   'api-gateway-compile',
@@ -25,7 +25,7 @@ docker_build_with_restart(
   'bolt-app/api-gateway',
   '.',
   entrypoint=['/app/build/api-gateway'],
-  dockerfile='./infra/development/docker/api-gateway.Dockerfile',
+  dockerfile='./deploy/development/docker/api-gateway.Dockerfile',
   only=[
     './build/api-gateway',
     './shared',
@@ -36,7 +36,7 @@ docker_build_with_restart(
   ],
 )
 
-k8s_yaml('./infra/development/k8s/api-gateway-deployment.yaml')
+k8s_yaml('./deploy/development/k8s/api-gateway-deployment.yaml')
 k8s_resource('api-gateway', port_forwards=8081,
              resource_deps=['api-gateway-compile'], labels="services")
 ### End of API Gateway ###
@@ -46,7 +46,7 @@ k8s_resource('api-gateway', port_forwards=8081,
 
 #trip_compile_cmd = 'CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/trip-service ./services/trip-service/cmd/main.go'
 #if os.name == 'nt':
-#  trip_compile_cmd = './infra/development/docker/trip-build.bat'
+#  trip_compile_cmd = './deploy/development/docker/trip-build.bat'
 
 # local_resource(
 #   'trip-service-compile',
@@ -57,7 +57,7 @@ k8s_resource('api-gateway', port_forwards=8081,
 #   'bolt-app/trip-service',
 #   '.',
 #   entrypoint=['/app/build/trip-service'],
-#   dockerfile='./infra/development/docker/trip-service.Dockerfile',
+#   dockerfile='./deploy/development/docker/trip-service.Dockerfile',
 #   only=[
 #     './build/trip-service',
 #     './shared',
@@ -68,7 +68,7 @@ k8s_resource('api-gateway', port_forwards=8081,
 #   ],
 # )
 
-# k8s_yaml('./infra/development/k8s/trip-service-deployment.yaml')
+# k8s_yaml('./deploy/development/k8s/trip-service-deployment.yaml')
 # k8s_resource('trip-service', resource_deps=['trip-service-compile'], labels="services")
 
 ### End of Trip Service ###
