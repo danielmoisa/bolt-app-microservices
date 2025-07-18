@@ -39,36 +39,36 @@ docker_build_with_restart(
 k8s_yaml('./deploy/development/k8s/api-gateway-deployment.yaml')
 k8s_resource('api-gateway', port_forwards=8081,
              resource_deps=['api-gateway-compile'], labels="services")
+
+             
 ### End of API Gateway ###
 ### Trip Service ###
 
-# Uncomment once we have a trip service
+trip_compile_cmd = 'CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/trip-service ./services/trip-service/cmd/main.go'
+if os.name == 'nt':
+ trip_compile_cmd = './deploy/development/docker/trip-build.bat'
 
-#trip_compile_cmd = 'CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/trip-service ./services/trip-service/cmd/main.go'
-#if os.name == 'nt':
-#  trip_compile_cmd = './deploy/development/docker/trip-build.bat'
+local_resource(
+  'trip-service-compile',
+  trip_compile_cmd,
+  deps=['./services/trip-service', './pkg'], labels="compiles")
 
-# local_resource(
-#   'trip-service-compile',
-#   trip_compile_cmd,
-#   deps=['./services/trip-service', './pkg'], labels="compiles")
+docker_build_with_restart(
+  'bolt-app/trip-service',
+  '.',
+  entrypoint=['/app/build/trip-service'],
+  dockerfile='./deploy/development/docker/trip-service.Dockerfile',
+  only=[
+    './build/trip-service',
+    './pkg',
+  ],
+  live_update=[
+    sync('./build', '/app/build'),
+    sync('./pkg', '/app/pkg'),
+  ],
+)
 
-# docker_build_with_restart(
-#   'bolt-app/trip-service',
-#   '.',
-#   entrypoint=['/app/build/trip-service'],
-#   dockerfile='./deploy/development/docker/trip-service.Dockerfile',
-#   only=[
-#     './build/trip-service',
-#     './pkg',
-#   ],
-#   live_update=[
-#     sync('./build', '/app/build'),
-#     sync('./pkg', '/app/pkg'),
-#   ],
-# )
-
-# k8s_yaml('./deploy/development/k8s/trip-service-deployment.yaml')
-# k8s_resource('trip-service', resource_deps=['trip-service-compile'], labels="services")
+k8s_yaml('./deploy/development/k8s/trip-service-deployment.yaml')
+k8s_resource('trip-service', resource_deps=['trip-service-compile'], labels="services")
 
 ### End of Trip Service ###
