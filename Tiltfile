@@ -8,6 +8,14 @@ k8s_yaml('./deploy/development/k8s/secrets.yaml')
 
 k8s_yaml('./deploy/development/k8s/app-config.yaml')
 
+# PostgreSQL Database
+k8s_yaml('./deploy/development/k8s/postgres-deployment.yaml')
+k8s_resource('postgres', labels="databases")
+
+# RabbitMQ Message Broker
+k8s_yaml('./deploy/development/k8s/rabbitmq-deployment.yaml')
+k8s_resource('rabbitmq', port_forwards=15672, labels="messaging")
+
 ### End of K8s Config ###
 ### API Gateway ###
 
@@ -69,6 +77,6 @@ docker_build_with_restart(
 )
 
 k8s_yaml('./deploy/development/k8s/trip-service-deployment.yaml')
-k8s_resource('trip-service', resource_deps=['trip-service-compile'], labels="services")
+k8s_resource('trip-service', resource_deps=['trip-service-compile', 'postgres', 'rabbitmq'], labels="services")
 
 ### End of Trip Service ###

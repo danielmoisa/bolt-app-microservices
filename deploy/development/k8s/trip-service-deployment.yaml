@@ -25,11 +25,33 @@ spec:
               memory: "128Mi"
               cpu: "200m"
           env:
-            - name: MONGODB_URI
+            - name: POSTGRES_HOST
               valueFrom:
                 secretKeyRef:
-                  name: mongodb
-                  key: uri
+                  name: postgres-credentials
+                  key: host
+            - name: POSTGRES_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: port
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: database
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: password
+            - name: POSTGRES_SSLMODE
+              value: "disable"
             - name: RABBITMQ_URI
               valueFrom:
                 secretKeyRef:

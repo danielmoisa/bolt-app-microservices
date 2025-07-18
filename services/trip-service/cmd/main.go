@@ -51,7 +51,7 @@ func main() {
 
 	rabbitMqURI := env.GetString("RABBITMQ_URI", "amqp://guest:guest@rabbitmq:5672/")
 
-	pgRepo := repository.NewPostgresRepository(pg)
+	pgRepo := repository.NewTripRepository(pg)
 	svc := service.NewService(pgRepo)
 
 	go func() {
