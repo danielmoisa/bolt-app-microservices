@@ -3,7 +3,6 @@ load('ext://restart_process', 'docker_build_with_restart')
 
 ### K8s Config ###
 
-# Uncomment to use secrets
 k8s_yaml('./deploy/development/k8s/secrets.yaml')
 
 k8s_yaml('./deploy/development/k8s/app-config.yaml')
@@ -80,3 +79,8 @@ k8s_yaml('./deploy/development/k8s/trip-service-deployment.yaml')
 k8s_resource('trip-service', resource_deps=['trip-service-compile', 'postgres', 'rabbitmq'], labels="services")
 
 ### End of Trip Service ###
+
+### Jaeger ###
+k8s_yaml('./deploy/development/k8s/jaeger.yaml')
+k8s_resource('jaeger', port_forwards=['16686:16686', '14268:14268'], labels="tooling")
+### End of Jaeger ###
