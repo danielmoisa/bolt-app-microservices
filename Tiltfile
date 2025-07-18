@@ -4,7 +4,7 @@ load('ext://restart_process', 'docker_build_with_restart')
 ### K8s Config ###
 
 # Uncomment to use secrets
-# k8s_yaml('./deploy/development/k8s/secrets.yaml')
+k8s_yaml('./deploy/development/k8s/secrets.yaml')
 
 k8s_yaml('./deploy/development/k8s/app-config.yaml')
 
@@ -18,7 +18,7 @@ if os.name == 'nt':
 local_resource(
   'api-gateway-compile',
   gateway_compile_cmd,
-  deps=['./services/api-gateway', './shared'], labels="compiles")
+  deps=['./services/api-gateway', './pkg'], labels="compiles")
 
 
 docker_build_with_restart(
@@ -28,11 +28,11 @@ docker_build_with_restart(
   dockerfile='./deploy/development/docker/api-gateway.Dockerfile',
   only=[
     './build/api-gateway',
-    './shared',
+    './pkg',
   ],
   live_update=[
     sync('./build', '/app/build'),
-    sync('./shared', '/app/shared'),
+    sync('./pkg', '/app/pkg'),
   ],
 )
 
@@ -51,7 +51,7 @@ k8s_resource('api-gateway', port_forwards=8081,
 # local_resource(
 #   'trip-service-compile',
 #   trip_compile_cmd,
-#   deps=['./services/trip-service', './shared'], labels="compiles")
+#   deps=['./services/trip-service', './pkg'], labels="compiles")
 
 # docker_build_with_restart(
 #   'bolt-app/trip-service',
@@ -60,11 +60,11 @@ k8s_resource('api-gateway', port_forwards=8081,
 #   dockerfile='./deploy/development/docker/trip-service.Dockerfile',
 #   only=[
 #     './build/trip-service',
-#     './shared',
+#     './pkg',
 #   ],
 #   live_update=[
 #     sync('./build', '/app/build'),
-#     sync('./shared', '/app/shared'),
+#     sync('./pkg', '/app/pkg'),
 #   ],
 # )
 
