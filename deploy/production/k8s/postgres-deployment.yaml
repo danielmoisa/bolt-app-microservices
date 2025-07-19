@@ -1,0 +1,145 @@
+# Production PostgreSQL Deployment
+# Option 1: Self-hosted PostgreSQL (for on-premise or smaller deployments)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:14
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: password
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: database
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - $(POSTGRES_USER)
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - $(POSTGRES_USER)
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+---
+# Persistent Volume Claim for PostgreSQL data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard-rwo  # Use appropriate storage class for your cloud provider
+  resources:
+    requests:
+      storage: 10Gi
+---
+# PostgreSQL Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: bolt-app
+spec:
+  type: NodePort
+  ports:
+  - port: 5432
+    targetPort: 5432
+    nodePort: 30432
+  selector:
+    app: postgres
+
+---
+# Option 2: Cloud SQL Proxy (for GCP - uncomment and configure for production)
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: cloud-sql-proxy
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: cloud-sql-proxy
+#   template:
+#     metadata:
+#       labels:
+#         app: cloud-sql-proxy
+#     spec:
+#       serviceAccountName: cloud-sql-proxy  # Create service account with Cloud SQL access
+#       containers:
+#       - name: cloud-sql-proxy
+#         image: gcr.io/cloudsql-docker/gce-proxy:latest
+#         command:
+#           - "/cloud_sql_proxy"
+#           - "-instances=YOUR_PROJECT:REGION:INSTANCE_NAME=tcp:0.0.0.0:5432"
+#         ports:
+#         - containerPort: 5432
+#         resources:
+#           requests:
+#             memory: "128Mi"
+#             cpu: "100m"
+#           limits:
+#             memory: "256Mi"
+#             cpu: "200m"
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: postgres  # Keep same name so services don't need to change
+# spec:
+#   selector:
+#     app: cloud-sql-proxy
+#   ports:
+#     - protocol: TCP
+#       port: 5432
+#       targetPort: 5432
+#   type: ClusterIP

@@ -33,15 +33,25 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: jaeger
+  name: jaeger-query
+  namespace: bolt-app
 spec:
-  selector:
-    app: jaeger
+  type: NodePort
   ports:
-    - name: ui
-      port: 16686
-      targetPort: 16686
-    - name: collector
-      port: 14268
-      targetPort: 14268
-  type: ClusterIP 
+  - port: 16686
+    targetPort: 16686
+    nodePort: 31668
+  selector:
+    app: jaeger-query
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger-collector
+  namespace: bolt-app
+spec:
+  ports:
+  - port: 14268
+    targetPort: 14268
+  selector:
+    app: jaeger-collector 
