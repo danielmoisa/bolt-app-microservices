@@ -58,6 +58,20 @@ func (h *gRPCHandler) PreviewTrip(ctx context.Context, req *pb.PreviewTripReques
 	pickup := req.GetStartLocation()
 	destination := req.GetEndLocation()
 
+	// Validate coordinates
+	if pickup.Latitude < -90 || pickup.Latitude > 90 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid pickup latitude: %f (must be between -90 and 90)", pickup.Latitude)
+	}
+	if pickup.Longitude < -180 || pickup.Longitude > 180 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid pickup longitude: %f (must be between -180 and 180)", pickup.Longitude)
+	}
+	if destination.Latitude < -90 || destination.Latitude > 90 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid destination latitude: %f (must be between -90 and 90)", destination.Latitude)
+	}
+	if destination.Longitude < -180 || destination.Longitude > 180 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid destination longitude: %f (must be between -180 and 180)", destination.Longitude)
+	}
+
 	pickupCoord := &types.Coordinate{
 		Latitude:  pickup.Latitude,
 		Longitude: pickup.Longitude,

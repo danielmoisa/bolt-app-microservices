@@ -95,6 +95,11 @@ func (s *service) GetRoute(ctx context.Context, pickup, destination *types.Coord
 		return nil, fmt.Errorf("failed to parse response: %v", err)
 	}
 
+	// Check if OSRM API returned an error message
+	if len(routeResp.Routes) == 0 {
+		log.Printf("Warning: OSRM API returned no routes - this might be due to invalid coordinates or API error")
+	}
+
 	return &routeResp, nil
 }
 
@@ -152,8 +157,17 @@ func estimateFareRoute(f *domain.RideFareModel, route *tripTypes.OsrmApiResponse
 	pricingCfg := tripTypes.DefaultPricingConfig()
 	carPackagePrice := f.TotalPriceInCents
 
-	distanceKm := route.Routes[0].Distance
-	durationInMinutes := route.Routes[0].Duration
+	// Check if routes are available, fallback to defaults if not
+	var distanceKm, durationInMinutes float64
+	if len(route.Routes) > 0 {
+		distanceKm = route.Routes[0].Distance
+		durationInMinutes = route.Routes[0].Duration
+	} else {
+		// Fallback to default values when OSRM API fails
+		distanceKm = 5.0        // 5km default
+		durationInMinutes = 600 // 10 minutes default
+		log.Printf("Warning: OSRM API returned no routes, using fallback values (distance: %.1fkm, duration: %.0f minutes)", distanceKm, durationInMinutes/60)
+	}
 
 	distanceFare := distanceKm * pricingCfg.PricePerUnitOfDistance
 	timeFare := durationInMinutes * pricingCfg.PricingPerMinute
