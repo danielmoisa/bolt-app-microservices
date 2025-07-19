@@ -4,6 +4,12 @@ This is the backend for a mobile and web application for ride-sharing services, 
 
 Tech stack: Golang, RabbitMQ, Docker, k8s, Stripe, Tilt, Google Cloud, and Postgres
 
+## Architecture
+
+![Architecture Diagram](docs/architecture.png)
+
+
+
 ## Local dev flow
 
 1. **Code**: You write Go code in `services/`

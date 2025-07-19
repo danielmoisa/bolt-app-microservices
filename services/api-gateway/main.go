@@ -73,14 +73,21 @@ func main() {
 		httpSwagger.WrapHandler(w, r)
 	}))
 
+	// Trips discovery and costs endpoints
 	mux.Handle("POST /trip/preview", tracing.WrapHandlerFunc(enableCORS(handleTripPreview), "/trip/preview"))
+
+	// Start trip endpoint
 	mux.Handle("POST /trip/start", tracing.WrapHandlerFunc(enableCORS(handleTripStart), "/trip/start"))
+
+	// Real time WebSocket endpoints for drivers and riders
 	mux.Handle("/ws/drivers", tracing.WrapHandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		handleDriversWebSocket(w, r, rabbitmq)
 	}, "/ws/drivers"))
 	mux.Handle("/ws/riders", tracing.WrapHandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		handleRidersWebSocket(w, r, rabbitmq)
 	}, "/ws/riders"))
+
+	// Stripe webhook endpoint to handle payment events
 	mux.Handle("/webhook/stripe", tracing.WrapHandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		handleStripeWebhook(w, r, rabbitmq)
 	}, "/webhook/stripe"))
