@@ -1,0 +1,10 @@
+# ArgoCD Installation for Local Testing
+# This will install ArgoCD in your Minikube cluster for GitOps testing
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argocd
+---
+# Apply ArgoCD installation
+# Run: kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml

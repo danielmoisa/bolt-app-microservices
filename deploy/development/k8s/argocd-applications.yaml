@@ -1,0 +1,41 @@
+# ArgoCD Application for Bolt App
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bolt-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/danielmoisa/bolt-app-microservices
+    targetRevision: HEAD
+    path: deploy/development/k8s
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: bolt-app
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+---
+# ArgoCD Application for Production Testing
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bolt-app-production
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/danielmoisa/bolt-app-microservices
+    targetRevision: HEAD
+    path: deploy/production/k8s
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: bolt-app-prod
+  syncPolicy:
+    manual: {}
+    syncOptions:
+    - CreateNamespace=true

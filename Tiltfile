@@ -1,6 +1,13 @@
 # Load the restart_process extension
 load('ext://restart_process', 'docker_build_with_restart')
 
+### ArgoCD Setup (Optional - for GitOps testing) ###
+local_resource(
+  'argocd-install',
+  'kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f - && kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml',
+  labels="argocd"
+)
+
 ### K8s Config ###
 
 k8s_yaml('./deploy/development/k8s/secrets.yaml')
