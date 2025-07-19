@@ -33,3 +33,6 @@ swagger-docs:
 # Start minikube tunnel (for LoadBalancer services)
 tunnel:
 	minikube tunnel
+
+forward-argo:
+	kubectl port-forward svc/argocd-server -n argocd 8080:443

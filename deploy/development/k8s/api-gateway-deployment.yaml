@@ -15,6 +15,7 @@ spec:
       containers:
         - name: api-gateway
           image: bolt-app/api-gateway
+          imagePullPolicy: Never
           ports:
             - containerPort: 8081
           resources:

@@ -17,6 +17,7 @@ spec:
       containers:
         - name: payment-service
           image: bolt-app/payment-service
+          imagePullPolicy: Never
           ports:
             - containerPort: 9004
           resources:
