@@ -1,38 +1,26 @@
-.PHONY: start-cluster stop-cluster status deploy-dashboard restart-cluster postgres-url tunnel swagger-docs
-
-# Start minikube cluster
-start-cluster:
-	minikube start
-
-# Stop minikube cluster
-stop-cluster:
-	minikube stop
-
-# Check cluster status
-status:
-	minikube status
-	kubectl cluster-info
-
-# Deploy Kubernetes dashboard
-deploy-dashboard:
-	kubectl apply -f /etc/kubernetes/addons/dashboard-svc.yaml
-
-# Clean restart cluster
-restart-cluster:
-	minikube delete
-	minikube start
+.PHONY:  postgres-url  swagger-docs setup-all forward-argo run-all apply-argo-apps
 
 # Get PostgreSQL service URL
 postgres-url:
 	minikube service postgres --url
 
+# Apply argo applications
+apply-argo-apps:
+	kubectl apply -f deploy/development/k8s/argocd-applications.yaml
+	
 # Generate Swagger documentation
 swagger-docs:
 	go run github.com/swaggo/swag/cmd/swag init -g services/api-gateway/main.go -o services/api-gateway/docs
 
-# Start minikube tunnel (for LoadBalancer services)
-tunnel:
-	minikube tunnel
+# Setup the development environment
+setup-all:
+	 minikube start
+	 ./scripts/setup-argocd.sh
+	 
+# Run tilt
+run-tilt:
+	tilt up
 
-forward-argo:
+# Forward ArgoCD service
+run-argo:
 	kubectl port-forward svc/argocd-server -n argocd 8080:443
