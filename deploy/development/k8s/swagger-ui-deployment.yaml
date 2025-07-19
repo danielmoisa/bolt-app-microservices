@@ -20,10 +20,12 @@ spec:
         ports:
         - containerPort: 8080
         env:
-        - name: SWAGGER_JSON_URL
-          value: "http://api-gateway/swagger/doc.json"
+        - name: API_URL
+          value: "http://localhost:8081/swagger/doc.json"
         - name: BASE_URL
-          value: "/swagger-ui"
+          value: "/"
+        - name: SUPPORTED_SUBMIT_METHODS
+          value: '["get", "post", "put", "delete", "patch"]'
         resources:
           requests:
             memory: "64Mi"

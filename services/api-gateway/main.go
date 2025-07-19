@@ -68,8 +68,10 @@ func main() {
 
 	log.Println("Starting RabbitMQ connection")
 
-	// Swagger endpoint
-	mux.Handle("/swagger/", httpSwagger.WrapHandler)
+	// Swagger endpoint with CORS enabled
+	mux.Handle("/swagger/", enableCORS(func(w http.ResponseWriter, r *http.Request) {
+		httpSwagger.WrapHandler(w, r)
+	}))
 
 	mux.Handle("POST /trip/preview", tracing.WrapHandlerFunc(enableCORS(handleTripPreview), "/trip/preview"))
 	mux.Handle("POST /trip/start", tracing.WrapHandlerFunc(enableCORS(handleTripStart), "/trip/start"))
