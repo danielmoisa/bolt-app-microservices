@@ -5,10 +5,11 @@ import (
 	"github.com/danielmoisa/bolt-app/pkg/types"
 )
 
+// previewTripRequest represents a trip preview request
 type previewTripRequest struct {
-	UserID      string           `json:"userID"`
-	Pickup      types.Coordinate `json:"pickup"`
-	Destination types.Coordinate `json:"destination"`
+	UserID      string           `json:"userID" example:"user123" binding:"required"`
+	Pickup      types.Coordinate `json:"pickup" binding:"required"`
+	Destination types.Coordinate `json:"destination" binding:"required"`
 }
 
 func (p *previewTripRequest) toProto() *pb.PreviewTripRequest {
@@ -25,9 +26,10 @@ func (p *previewTripRequest) toProto() *pb.PreviewTripRequest {
 	}
 }
 
+// startTripRequest represents a start trip request
 type startTripRequest struct {
-	RideFareID string `json:"rideFareID"`
-	UserID     string `json:"userID"`
+	RideFareID string `json:"rideFareID" example:"fare123" binding:"required"`
+	UserID     string `json:"userID" example:"user123" binding:"required"`
 }
 
 func (c *startTripRequest) toProto() *pb.CreateTripRequest {

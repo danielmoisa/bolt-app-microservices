@@ -12,7 +12,26 @@ import (
 	"github.com/danielmoisa/bolt-app/pkg/env"
 	"github.com/danielmoisa/bolt-app/pkg/messaging"
 	"github.com/danielmoisa/bolt-app/pkg/tracing"
+
+	_ "github.com/danielmoisa/bolt-app/services/api-gateway/docs"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
+
+// @title Bolt App API Gateway
+// @version 1.0
+// @description This is the API Gateway for the Bolt ride-sharing microservices application.
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8081
+// @BasePath /
+// @schemes http https
 
 var (
 	httpAddr    = env.GetString("HTTP_ADDR", ":8081")
@@ -48,6 +67,9 @@ func main() {
 	defer rabbitmq.Close()
 
 	log.Println("Starting RabbitMQ connection")
+
+	// Swagger endpoint
+	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 
 	mux.Handle("POST /trip/preview", tracing.WrapHandlerFunc(enableCORS(handleTripPreview), "/trip/preview"))
 	mux.Handle("POST /trip/start", tracing.WrapHandlerFunc(enableCORS(handleTripStart), "/trip/start"))

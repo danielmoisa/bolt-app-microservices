@@ -1,4 +1,4 @@
-.PHONY: start-cluster stop-cluster status deploy-dashboard restart-cluster postgres-url tunnel
+.PHONY: start-cluster stop-cluster status deploy-dashboard restart-cluster postgres-url tunnel swagger-docs
 
 # Start minikube cluster
 start-cluster:
@@ -25,6 +25,10 @@ restart-cluster:
 # Get PostgreSQL service URL
 postgres-url:
 	minikube service postgres --url
+
+# Generate Swagger documentation
+swagger-docs:
+	go run github.com/swaggo/swag/cmd/swag init -g services/api-gateway/main.go -o services/api-gateway/docs
 
 # Start minikube tunnel (for LoadBalancer services)
 tunnel:

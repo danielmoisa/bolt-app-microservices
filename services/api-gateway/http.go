@@ -18,6 +18,17 @@ import (
 
 var tracer = tracing.GetTracer("api-gateway")
 
+// handleTripStart starts a new trip
+// @Summary Start a trip
+// @Description Creates a new trip with the provided ride fare ID and user ID
+// @Tags trips
+// @Accept json
+// @Produce json
+// @Param trip body startTripRequest true "Start trip request"
+// @Success 200 {object} map[string]interface{} "Trip started successfully"
+// @Failure 400 {object} map[string]string "Bad request"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /trip/start [post]
 func handleTripStart(w http.ResponseWriter, r *http.Request) {
 	ctx, span := tracer.Start(r.Context(), "handleTripStart")
 	defer span.End()
@@ -53,6 +64,17 @@ func handleTripStart(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusCreated, response)
 }
 
+// handleTripPreview previews a trip with estimated fares
+// @Summary Preview a trip
+// @Description Get trip preview with estimated fares for different ride packages
+// @Tags trips
+// @Accept json
+// @Produce json
+// @Param preview body previewTripRequest true "Trip preview request"
+// @Success 200 {object} map[string]interface{} "Trip preview with estimated fares"
+// @Failure 400 {object} map[string]string "Bad request"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /trip/preview [post]
 func handleTripPreview(w http.ResponseWriter, r *http.Request) {
 	ctx, span := tracer.Start(r.Context(), "handleTripPreview")
 	defer span.End()

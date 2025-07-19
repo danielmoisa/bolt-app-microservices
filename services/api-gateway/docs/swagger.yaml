@@ -1,0 +1,123 @@
+basePath: /
+definitions:
+  main.previewTripRequest:
+    properties:
+      destination:
+        $ref: '#/definitions/types.Coordinate'
+      pickup:
+        $ref: '#/definitions/types.Coordinate'
+      userID:
+        example: user123
+        type: string
+    required:
+    - destination
+    - pickup
+    - userID
+    type: object
+  main.startTripRequest:
+    properties:
+      rideFareID:
+        example: fare123
+        type: string
+      userID:
+        example: user123
+        type: string
+    required:
+    - rideFareID
+    - userID
+    type: object
+  types.Coordinate:
+    properties:
+      latitude:
+        type: number
+      longitude:
+        type: number
+    type: object
+host: localhost:8081
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is the API Gateway for the Bolt ride-sharing microservices application.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Bolt App API Gateway
+  version: "1.0"
+paths:
+  /trip/preview:
+    post:
+      consumes:
+      - application/json
+      description: Get trip preview with estimated fares for different ride packages
+      parameters:
+      - description: Trip preview request
+        in: body
+        name: preview
+        required: true
+        schema:
+          $ref: '#/definitions/main.previewTripRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Trip preview with estimated fares
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Preview a trip
+      tags:
+      - trips
+  /trip/start:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new trip with the provided ride fare ID and user ID
+      parameters:
+      - description: Start trip request
+        in: body
+        name: trip
+        required: true
+        schema:
+          $ref: '#/definitions/main.startTripRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Trip started successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Start a trip
+      tags:
+      - trips
+schemes:
+- http
+- https
+swagger: "2.0"

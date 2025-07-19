@@ -18,6 +18,13 @@ k8s_resource('rabbitmq', port_forwards=15672, labels="messaging")
 ### End of K8s Config ###
 ### API Gateway ###
 
+# Generate Swagger docs before compiling
+local_resource(
+  'swagger-docs-generate',
+  'make swagger-docs',
+  deps=['./services/api-gateway/*.go', './services/api-gateway/grpc_clients/*.go'], 
+  labels="compiles")
+
 gateway_compile_cmd = 'CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/api-gateway ./services/api-gateway'
 if os.name == 'nt':
   gateway_compile_cmd = './deploy/development/docker/api-gateway-build.bat'
@@ -25,7 +32,9 @@ if os.name == 'nt':
 local_resource(
   'api-gateway-compile',
   gateway_compile_cmd,
-  deps=['./services/api-gateway', './pkg'], labels="compiles")
+  deps=['./services/api-gateway/*.go', './services/api-gateway/grpc_clients/*.go', './services/api-gateway/docs/*.go', './pkg'], 
+  resource_deps=['swagger-docs-generate'],
+  labels="compiles")
 
 
 docker_build_with_restart(
@@ -146,3 +155,8 @@ k8s_resource('payment-service', resource_deps=['payment-service-compile', 'rabbi
 k8s_yaml('./deploy/development/k8s/jaeger.yaml')
 k8s_resource('jaeger', port_forwards=['16686:16686', '14268:14268'], labels="tooling")
 ### End of Jaeger ###
+
+### Swagger UI ###
+k8s_yaml('./deploy/development/k8s/swagger-ui-deployment.yaml')
+k8s_resource('swagger-ui', port_forwards=8082, resource_deps=['api-gateway'], labels="tooling")
+### End of Swagger UI ###
