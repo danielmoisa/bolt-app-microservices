@@ -12,6 +12,6 @@ web/node_modules/
 .DS_Store
 
 # Include shared code
-!shared/
+!pkg/
 
 proto/
