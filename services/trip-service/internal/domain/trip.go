@@ -21,13 +21,29 @@ type TripModel struct {
 }
 
 func (t *TripModel) ToProto() *pb.Trip {
+	var route *pb.Route
+	if t.RideFare != nil && t.RideFare.Route != nil {
+		route = t.RideFare.Route.ToProto()
+	} else {
+		// Fallback route if no route data available
+		route = &pb.Route{
+			Distance: 0,
+			Duration: 0,
+			Geometry: []*pb.Geometry{
+				{
+					Coordinates: []*pb.Coordinate{},
+				},
+			},
+		}
+	}
+
 	return &pb.Trip{
 		Id:           t.ID,
 		UserID:       t.UserID,
 		SelectedFare: t.RideFare.ToProto(),
 		Status:       t.Status,
 		Driver:       t.Driver,
-		Route:        t.RideFare.Route.ToProto(),
+		Route:        route,
 	}
 }
 

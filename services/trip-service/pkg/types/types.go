@@ -13,6 +13,19 @@ type OsrmApiResponse struct {
 }
 
 func (o *OsrmApiResponse) ToProto() *pb.Route {
+	// Handle case where Routes is empty (OSRM API error)
+	if len(o.Routes) == 0 {
+		return &pb.Route{
+			Distance: 0,
+			Duration: 0,
+			Geometry: []*pb.Geometry{
+				{
+					Coordinates: []*pb.Coordinate{},
+				},
+			},
+		}
+	}
+
 	route := o.Routes[0]
 	geometry := route.Geometry.Coordinates
 	coordinates := make([]*pb.Coordinate, len(geometry))
