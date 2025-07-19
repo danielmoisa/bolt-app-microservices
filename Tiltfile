@@ -92,7 +92,7 @@ local_resource(
   deps=['./services/driver-service', './pkg'], labels="compiles")
 
 docker_build_with_restart(
-  'ride-sharing/driver-service',
+  'bolt-app/driver-service',
   '.',
   entrypoint=['/app/build/driver-service'],
   dockerfile='./deploy/development/docker/driver-service.Dockerfile',
@@ -123,7 +123,7 @@ local_resource(
   deps=['./services/payment-service', './pkg'], labels="compiles")
 
 docker_build_with_restart(
-  'ride-sharing/payment-service',
+  'bolt-app/payment-service',
   '.',
   entrypoint=['/app/build/payment-service'],
   dockerfile='./deploy/development/docker/payment-service.Dockerfile',

@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: driver-service
-          image: bold-app/driver-service
+          image: bolt-app/driver-service
           imagePullPolicy: Never
           ports:
             - containerPort: 9092

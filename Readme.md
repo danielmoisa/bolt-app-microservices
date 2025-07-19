@@ -1,4 +1,4 @@
-## Bold app microservices
+## Bolt app microservices
 
 This is the backend for a mobile and web application for ride-sharing services, built using event-driven distributed microservices architecture, and deployed on Kubernetes.
 
