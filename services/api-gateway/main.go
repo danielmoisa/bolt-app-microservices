@@ -68,6 +68,12 @@ func main() {
 
 	log.Println("Starting RabbitMQ connection")
 
+	// Health check endpoint
+	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	})
+
 	// Swagger endpoint with CORS enabled
 	mux.Handle("/swagger/", enableCORS(func(w http.ResponseWriter, r *http.Request) {
 		httpSwagger.WrapHandler(w, r)

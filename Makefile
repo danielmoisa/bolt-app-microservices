@@ -5,7 +5,7 @@ help:
 	@echo "🚀 Bolt App Microservices"
 	@echo "========================"
 	@echo ""
-	@echo "Setup:     setup-complete, setup-minikube"
+	@echo "Setup:     setup-all, setup-minikube"
 	@echo "Dev:       run-tilt, run-argo, build-images"
 	@echo "Utils:     status, check-context, clean-all"
 	@echo ""
@@ -36,8 +36,17 @@ apply-argo-apps: check-context build-images
 swagger-docs:
 	go run github.com/swaggo/swag/cmd/swag init -g services/api-gateway/main.go -o services/api-gateway/docs
 
+# Build Go binaries
+build-binaries:
+	@echo "Building Go binaries..."
+	mkdir -p build
+	go build -o build/api-gateway ./services/api-gateway
+	go build -o build/trip-service ./services/trip-service/cmd
+	go build -o build/driver-service ./services/driver-service
+	go build -o build/payment-service ./services/payment-service/cmd
+
 # Build Docker images
-build-images: check-context
+build-images: check-context build-binaries
 	@echo "Building images..."
 	@eval $$(minikube docker-env) && \
 	docker build -t bolt-app/api-gateway -f deploy/development/docker/api-gateway.Dockerfile . && \
