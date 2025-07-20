@@ -37,13 +37,14 @@ swagger-docs:
 	go run github.com/swaggo/swag/cmd/swag init -g services/api-gateway/main.go -o services/api-gateway/docs
 
 # Build Go binaries
-build-binaries:
+build-binaries: check-context
 	@echo "Building Go binaries..."
-	mkdir -p build
-	go build -o build/api-gateway ./services/api-gateway
-	go build -o build/trip-service ./services/trip-service/cmd
-	go build -o build/driver-service ./services/driver-service
-	go build -o build/payment-service ./services/payment-service/cmd
+	@eval $$(minikube docker-env) && \
+	mkdir -p build && \
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags '-extldflags "-static"' -o build/api-gateway ./services/api-gateway && \
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags '-extldflags "-static"' -o build/trip-service ./services/trip-service/cmd && \
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags '-extldflags "-static"' -o build/driver-service ./services/driver-service && \
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags '-extldflags "-static"' -o build/payment-service ./services/payment-service/cmd
 
 # Build Docker images
 build-images: check-context build-binaries
