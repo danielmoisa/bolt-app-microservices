@@ -1,0 +1,6 @@
+# Ignore Swagger UI deployment from ArgoCD
+# Swagger UI should only be deployed via Tilt for development
+swagger-ui-deployment.yaml
+
+# Also ignore Jaeger as it's development-only
+jaeger.yaml

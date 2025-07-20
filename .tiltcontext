@@ -1,0 +1,3 @@
+# Tilt configuration to ensure correct kubectl context
+allow_k8s_contexts(['minikube'])
+default_registry('bolt-app')

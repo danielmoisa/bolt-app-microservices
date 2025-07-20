@@ -12,12 +12,36 @@ spec:
       labels:
         app: api-gateway
     spec:
+      initContainers:
+        - name: wait-for-rabbitmq
+          image: busybox:1.35
+          command: ['sh', '-c']
+          args:
+            - |
+              echo "Waiting for RabbitMQ to be ready..."
+              until nc -z rabbitmq 5672; do
+                echo "RabbitMQ not ready, waiting..."
+                sleep 2
+              done
+              echo "RabbitMQ is ready!"
       containers:
         - name: api-gateway
           image: bolt-app/api-gateway
           imagePullPolicy: Never
           ports:
             - containerPort: 8081
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 30
+            periodSeconds: 10
           resources:
             requests:
               memory: "128Mi"

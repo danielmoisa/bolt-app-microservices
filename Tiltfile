@@ -1,12 +1,8 @@
+# Ensure Tilt uses the correct kubectl context
+allow_k8s_contexts(['minikube'])
+
 # Load the restart_process extension
 load('ext://restart_process', 'docker_build_with_restart')
-
-### ArgoCD Setup (Optional - for GitOps testing) ###
-local_resource(
-  'argocd-install',
-  'kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f - && kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml',
-  labels="argocd"
-)
 
 ### K8s Config ###
 
@@ -165,5 +161,5 @@ k8s_resource('jaeger', port_forwards=['16686:16686', '14268:14268'], labels="too
 
 ### Swagger UI ###
 k8s_yaml('./deploy/development/k8s/swagger-ui-deployment.yaml')
-k8s_resource('swagger-ui', port_forwards=8082, resource_deps=['api-gateway'], labels="tooling")
+k8s_resource('swagger-ui', port_forwards='8082:80', resource_deps=['api-gateway'], labels="tooling")
 ### End of Swagger UI ###

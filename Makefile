@@ -1,26 +1,59 @@
-.PHONY:  postgres-url  swagger-docs setup-all forward-argo run-all apply-argo-apps
+.PHONY: postgres-url swagger-docs setup-all run-argo apply-argo-apps run-tilt clean-all check-context setup-minikube status help build-images
 
-# Get PostgreSQL service URL
-postgres-url:
+# Show available commands
+help:
+	@echo "🚀 Bolt App Microservices"
+	@echo "========================"
+	@echo ""
+	@echo "Setup:     setup-complete, setup-minikube"
+	@echo "Dev:       run-tilt, run-argo, build-images"
+	@echo "Utils:     status, check-context, clean-all"
+	@echo ""
+
+# Setup minikube
+setup-minikube: check-context
+	minikube start
+	@eval $$(minikube docker-env)
+
+# Complete setup
+setup-all: setup-minikube
+	@echo "🚀 Complete setup..."
+	./scripts/setup-argocd.sh
+	make swagger-docs
+	make build-images
+	kubectl apply -f deploy/development/k8s/argocd-applications.yaml
+	@echo "✅ Ready! Next: make run-argo or make run-tilt"
+
+# Get PostgreSQL URL
+postgres-url: check-context
 	minikube service postgres --url
 
-# Apply argo applications
-apply-argo-apps:
+# Apply ArgoCD applications
+apply-argo-apps: check-context build-images
 	kubectl apply -f deploy/development/k8s/argocd-applications.yaml
 	
-# Generate Swagger documentation
+# Generate Swagger docs
 swagger-docs:
 	go run github.com/swaggo/swag/cmd/swag init -g services/api-gateway/main.go -o services/api-gateway/docs
 
-# Setup the development environment
-setup-all:
-	 minikube start
-	 ./scripts/setup-argocd.sh
-	 
-# Run tilt
-run-tilt:
-	tilt up
+# Build Docker images
+build-images: check-context
+	@echo "Building images..."
+	@eval $$(minikube docker-env) && \
+	docker build -t bolt-app/api-gateway -f deploy/development/docker/api-gateway.Dockerfile . && \
+	docker build -t bolt-app/trip-service -f deploy/development/docker/trip-service.Dockerfile . && \
+	docker build -t bolt-app/driver-service -f deploy/development/docker/driver-service.Dockerfile . && \
+	docker build -t bolt-app/payment-service -f deploy/development/docker/payment-service.Dockerfile .
 
-# Forward ArgoCD service
-run-argo:
+# Run Tilt development
+run-tilt: check-context build-images
+	@echo "Starting Tilt..."
+	@echo "Services: API Gateway:8081, Swagger:8082, RabbitMQ:15672, Jaeger:16686"
+	@eval $$(minikube docker-env) && tilt up
+
+# Access ArgoCD UI
+run-argo: check-context
+	@echo "ArgoCD: https://localhost:8080"
+	@echo "User: admin"
+	@echo "Pass: $$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d 2>/dev/null || echo "ArgoCD not installed")"
 	kubectl port-forward svc/argocd-server -n argocd 8080:443
