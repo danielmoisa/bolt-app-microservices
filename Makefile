@@ -1,4 +1,4 @@
-.PHONY: postgres-url swagger-docs setup-all run-argo apply-argo-apps run-tilt clean-all check-context setup-minikube status help build-images
+.PHONY: postgres-url swagger-docs setup-all run-argo apply-argo-apps run-tilt clean-all check-context setup-minikube status help build-images lint security test lint-fix
 
 # Show available commands
 help:
@@ -7,6 +7,7 @@ help:
 	@echo ""
 	@echo "Setup:     setup-all, setup-minikube"
 	@echo "Dev:       run-tilt, run-argo, build-images"
+	@echo "Quality:   lint, security, test, lint-fix"
 	@echo "Utils:     status, check-context, clean-all"
 	@echo ""
 
@@ -67,3 +68,43 @@ run-argo: check-context
 	@echo "User: admin"
 	@echo "Pass: $$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d 2>/dev/null || echo "ArgoCD not installed")"
 	kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+# Code quality and security checks
+lint:
+	@echo "🔍 Running golangci-lint..."
+	golangci-lint run ./...
+
+lint-fix:
+	@echo "🔧 Running golangci-lint with auto-fix..."
+	golangci-lint run --fix ./...
+
+security:
+	@echo "🔒 Running security analysis with gosec..."
+	gosec -fmt=json -out=gosec-report.json ./...
+
+test:
+	@echo "🧪 Running tests with coverage..."
+	go test -v -race -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out -o coverage.html
+	@echo "📊 Coverage report generated: coverage.html"
+
+# Combined quality check
+quality: lint security test
+	@echo "✅ All quality checks completed!"
+
+# Check missing targets
+check-context:
+	@echo "Checking kubectl context..."
+	@kubectl config current-context
+
+status: check-context
+	@echo "📊 Cluster Status:"
+	@kubectl get pods -n bolt-app
+	@echo ""
+	@echo "🌐 Services:"
+	@kubectl get svc -n bolt-app
+
+clean-all: check-context
+	@echo "🧹 Cleaning up..."
+	kubectl delete namespace bolt-app --ignore-not-found=true
+	minikube stop

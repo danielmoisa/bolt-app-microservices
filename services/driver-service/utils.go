@@ -1,6 +1,9 @@
 package main
 
-import "math/rand"
+import (
+	"crypto/rand"
+	"math/big"
+)
 
 // Predefined routes for drivers (used for the gRPC Streaming module)
 // (these are San Francisco routes, get these coordinates from Google Maps for example and build a custom route if you want)
@@ -49,8 +52,14 @@ var PredefinedRoutes = [][][]float64{
 func GenerateRandomPlate() string {
 	letters := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	plate := ""
-	for i := 0; i < 3; i++ {
-		plate += string(letters[rand.Intn(len(letters))])
+	for range 3 {
+		n, err := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
+		if err != nil {
+			// Fallback to a default character if crypto/rand fails
+			plate += "A"
+			continue
+		}
+		plate += string(letters[n.Int64()])
 	}
 
 	return plate

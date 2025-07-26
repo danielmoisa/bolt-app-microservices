@@ -1,7 +1,8 @@
 package main
 
 import (
-	math "math/rand/v2"
+	"crypto/rand"
+	"math/big"
 	"sync"
 
 	pb "github.com/danielmoisa/bolt-app/pkg/proto/driver"
@@ -47,7 +48,11 @@ func (s *Service) RegisterDriver(driverId string, packageSlug string) (*pb.Drive
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	randomIndex := math.IntN(len(PredefinedRoutes))
+	n, err := rand.Int(rand.Reader, big.NewInt(int64(len(PredefinedRoutes))))
+	if err != nil {
+		return nil, err
+	}
+	randomIndex := int(n.Int64())
 	randomRoute := PredefinedRoutes[randomIndex]
 
 	randomPlate := GenerateRandomPlate()

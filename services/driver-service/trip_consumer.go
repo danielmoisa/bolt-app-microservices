@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/json"
 	"log"
-	"math/rand"
+	"math/big"
 
 	"github.com/danielmoisa/bolt-app/pkg/contracts"
 	"github.com/danielmoisa/bolt-app/pkg/messaging"
@@ -69,7 +70,12 @@ func (c *tripConsumer) handleFindAndNotifyDrivers(ctx context.Context, payload m
 	}
 
 	// Get a random index from the matching drivers
-	randomIndex := rand.Intn(len(suitableIDs))
+	n, err := rand.Int(rand.Reader, big.NewInt(int64(len(suitableIDs))))
+	if err != nil {
+		log.Printf("Error generating random number: %v", err)
+		return err
+	}
+	randomIndex := n.Int64()
 
 	suitableDriverID := suitableIDs[randomIndex]
 

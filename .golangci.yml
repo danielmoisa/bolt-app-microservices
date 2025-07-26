@@ -5,6 +5,7 @@ run:
 
 linters:
   enable:
+    # Default linters
     - errcheck
     - gosimple
     - govet
@@ -15,3 +16,18 @@ linters:
     - gofmt
     - goimports
     - misspell
+    
+    # Additional security & quality linters
+    - bodyclose
+    - dupl
+    - goconst
+    - gocritic
+    - gocyclo
+    - gosec
+    - nakedret
+    - nestif
+    - prealloc
+    - revive
+    - unconvert
+    - unparam
+    - wastedassign
