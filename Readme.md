@@ -35,7 +35,6 @@ Tech stack: Golang, RabbitMQ, Docker, k8s, Stripe, Tilt, Google Cloud, and Postg
    - Manages multi-environment deployments
 4. **Production cluster** (EKS, GKE, or self-managed Kubernetes)
 
-TODO:
-- add users ms
-- add go tools
-- add argo cd
+## Start app
+1. `make setup-all`
+2. `make run-tilt or/and make run-argo`
