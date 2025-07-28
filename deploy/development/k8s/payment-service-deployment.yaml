@@ -13,6 +13,10 @@ spec:
     metadata:
       labels:
         app: payment-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9194"
+        prometheus.io/path: "/metrics"
     spec:
       containers:
         - name: payment-service
@@ -20,6 +24,8 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 9004
+            - containerPort: 9194
+              name: metrics
           resources:
             requests:
               memory: "64Mi"

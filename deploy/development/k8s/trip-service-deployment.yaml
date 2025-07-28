@@ -11,6 +11,10 @@ spec:
     metadata:
       labels:
         app: trip-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9193"
+        prometheus.io/path: "/metrics"
     spec:
       containers:
         - name: trip-service
@@ -18,6 +22,8 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 9093
+            - containerPort: 9193
+              name: metrics
           resources:
             requests:
               memory: "64Mi"

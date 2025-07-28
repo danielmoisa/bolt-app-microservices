@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,10 +13,14 @@ import (
 	"github.com/danielmoisa/bolt-app/pkg/messaging"
 	"github.com/danielmoisa/bolt-app/pkg/tracing"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	grpcserver "google.golang.org/grpc"
 )
 
-var GrpcAddr = ":9092"
+var (
+	GrpcAddr    = ":9092"
+	MetricsAddr = ":9192"
+)
 
 func main() {
 	// Initialize Tracing
@@ -71,6 +76,20 @@ func main() {
 	}()
 
 	log.Printf("Starting gRPC server Driver service on port %s", lis.Addr().String())
+
+	// Start metrics server
+	go func() {
+		mux := http.NewServeMux()
+		mux.Handle("/metrics", promhttp.Handler())
+		mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("OK"))
+		})
+		log.Printf("Starting metrics server on %s", MetricsAddr)
+		if err := http.ListenAndServe(MetricsAddr, mux); err != nil {
+			log.Printf("Failed to start metrics server: %v", err)
+		}
+	}()
 
 	go func() {
 		if err := grpcServer.Serve(lis); err != nil {

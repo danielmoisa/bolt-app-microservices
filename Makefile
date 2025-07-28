@@ -35,7 +35,7 @@ apply-argo-apps: check-context build-images
 	
 # Generate Swagger docs
 swagger-docs:
-	go run github.com/swaggo/swag/cmd/swag init -g services/api-gateway/main.go -o services/api-gateway/docs
+	swag init -g services/api-gateway/main.go -o services/api-gateway/docs
 
 # Build Go binaries
 build-binaries: check-context

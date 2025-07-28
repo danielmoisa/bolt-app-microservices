@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,9 +15,13 @@ import (
 	"github.com/danielmoisa/bolt-app/services/payment-service/internal/infrastructure/stripe"
 	"github.com/danielmoisa/bolt-app/services/payment-service/internal/service"
 	"github.com/danielmoisa/bolt-app/services/payment-service/pkg/types"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-var GrpcAddr = env.GetString("GRPC_ADDR", ":9004")
+var (
+	GrpcAddr    = env.GetString("GRPC_ADDR", ":9004")
+	MetricsAddr = env.GetString("METRICS_ADDR", ":9194")
+)
 
 func main() {
 	// Initialize Tracing
@@ -73,6 +78,20 @@ func main() {
 	defer rabbitmq.Close()
 
 	log.Println("Starting RabbitMQ connection")
+
+	// Start metrics server
+	go func() {
+		mux := http.NewServeMux()
+		mux.Handle("/metrics", promhttp.Handler())
+		mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("OK"))
+		})
+		log.Printf("Starting metrics server on %s", MetricsAddr)
+		if err := http.ListenAndServe(MetricsAddr, mux); err != nil {
+			log.Printf("Failed to start metrics server: %v", err)
+		}
+	}()
 
 	// Trip Consumer
 	tripConsumer := events.NewTripConsumer(rabbitmq, svc)

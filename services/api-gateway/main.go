@@ -14,6 +14,8 @@ import (
 	"github.com/danielmoisa/bolt-app/pkg/tracing"
 
 	_ "github.com/danielmoisa/bolt-app/services/api-gateway/docs"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
@@ -36,7 +38,30 @@ import (
 var (
 	httpAddr    = env.GetString("HTTP_ADDR", ":8081")
 	rabbitMqURI = env.GetString("RABBITMQ_URI", "amqp://guest:guest@rabbitmq:5672/")
+
+	// Prometheus metrics
+	httpRequestsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "http_requests_total",
+			Help: "Total number of HTTP requests.",
+		},
+		[]string{"method", "endpoint", "status_code"},
+	)
+
+	httpRequestDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name: "http_request_duration_seconds",
+			Help: "Duration of HTTP requests.",
+		},
+		[]string{"method", "endpoint"},
+	)
 )
+
+func init() {
+	// Register metrics with Prometheus
+	prometheus.MustRegister(httpRequestsTotal)
+	prometheus.MustRegister(httpRequestDuration)
+}
 
 func main() {
 	log.Println("Starting API Gateway")
@@ -73,6 +98,9 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	})
+
+	// Metrics endpoint for Prometheus
+	mux.Handle("/metrics", promhttp.Handler())
 
 	// Swagger endpoint with CORS enabled
 	mux.Handle("/swagger/", enableCORS(func(w http.ResponseWriter, r *http.Request) {
